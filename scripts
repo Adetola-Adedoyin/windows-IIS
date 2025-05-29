@@ -1,0 +1,45 @@
+# Run as Administrator
+
+Write-Host "Installing IIS and required features..." -ForegroundColor Cyan
+
+# Enable IIS and useful features
+Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole, `
+    IIS-WebServer, `
+    IIS-CommonHttpFeatures, `
+    IIS-StaticContent, `
+    IIS-DefaultDocument, `
+    IIS-DirectoryBrowsing, `
+    IIS-HttpErrors, `
+    IIS-ApplicationDevelopment, `
+    IIS-ASPNET45, `
+    IIS-NetFxExtensibility45, `
+    IIS-ISAPIExtensions, `
+    IIS-ISAPIFilter, `
+    IIS-ManagementConsole `
+    -All -NoRestart
+
+# Start IIS service
+Write-Host "`n Starting IIS service..." -ForegroundColor Cyan
+Start-Service W3SVC
+
+# Wait briefly to ensure service starts
+Start-Sleep -Seconds 3
+
+# Open localhost in default browser
+Write-Host "`n Opening http://localhost in your browser..." -ForegroundColor Cyan
+Start-Process "http://localhost"
+
+# Optional: Check response
+Write-Host "`n Testing HTTP response from localhost..." -ForegroundColor Cyan
+try {
+    $response = Invoke-WebRequest "http://localhost" -UseBasicParsing
+    if ($response.StatusCode -eq 200) {
+        Write-Host " IIS is running and returned HTTP 200 (OK)" -ForegroundColor Green
+    } else {
+        Write-Host " IIS returned status code: $($response.StatusCode)" -ForegroundColor Yellow
+    }
+}
+catch {
+    Write-Host " Failed to reach IIS at http://localhost" -ForegroundColor Red
+    Write-Host $_.Exception.Message
+}
